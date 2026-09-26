@@ -83,29 +83,16 @@
             return;
         }
         var css = ''
-            + '.' + SECTION_CLASS + ' .gsp-row{display:flex;overflow-x:auto;overflow-y:hidden;'
-            + 'scrollbar-width:none;-webkit-overflow-scrolling:touch;}'
+            // The row reuses the web client's scroller and card markup, so themes style it like every other row.
+            // Only scrolling itself is handled here, because the client's emby-scroller element is not used.
+            + '.' + SECTION_CLASS + ' .gsp-row{overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;}'
             + '.' + SECTION_CLASS + ' .gsp-row::-webkit-scrollbar{display:none;}'
             + '.layout-desktop .' + SECTION_CLASS + ' .gsp-row{cursor:grab;}'
             + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging{cursor:grabbing;user-select:none;}'
-            + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging .gsp-card{pointer-events:none;}'
-            // Cards use the web client's "overflowBackdropCard" size, so they match the other home rows;
-            // the margins mirror what the client applies to cards inside its own scrollers.
-            + '.' + SECTION_CLASS + ' .gsp-card{display:block;flex:0 0 auto;text-decoration:none;outline:none;-webkit-user-drag:none;}'
-            + '.' + SECTION_CLASS + ' .gsp-box{margin:.6em 1.2em .6em 0;}'
-            + '[dir="rtl"] .' + SECTION_CLASS + ' .gsp-box{margin:.6em 0 .6em 1.2em;}'
-            + '.' + SECTION_CLASS + ' .gsp-scalable{position:relative;border-radius:.2em;overflow:hidden;'
-            + 'transition:transform .18s ease,box-shadow .18s ease;}'
-            + '.' + SECTION_CLASS + ' .gsp-padder{padding-bottom:56.25%;}'
-            + '.' + SECTION_CLASS + ' .gsp-img{position:absolute;inset:0;background-size:cover;background-position:center;}'
-            + '.' + SECTION_CLASS + ' .gsp-card:hover .gsp-scalable,.' + SECTION_CLASS + ' .gsp-card:focus .gsp-scalable{transform:scale(1.03);'
-            + 'box-shadow:0 .4em 1.2em rgba(0,0,0,.5);}'
-            + '.' + SECTION_CLASS + ' .gsp-card:focus-visible .gsp-scalable{box-shadow:0 0 0 .2em #00a4dc,0 .4em 1.2em rgba(0,0,0,.5);}'
-            + '.' + SECTION_CLASS + ' .gsp-shade{position:absolute;inset:0;'
-            + 'background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.75) 100%);}'
-            + '.' + SECTION_CLASS + ' .gsp-name{position:absolute;left:.7em;right:.7em;bottom:.55em;font-size:1.25em;font-weight:600;color:#fff;'
-            + 'text-shadow:0 1px 4px rgba(0,0,0,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
-            + '.' + SECTION_CLASS + ' .gsp-count{display:block;font-size:.62em;font-weight:400;opacity:.85;}'
+            + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging .card{pointer-events:none;}'
+            + '.' + SECTION_CLASS + ' .card a{-webkit-user-drag:none;}'
+            + '.' + SECTION_CLASS + ' .gsp-fallback-name{color:#fff;font-size:1.4em;font-weight:600;text-align:center;padding:0 .5em;'
+            + 'white-space:normal;text-shadow:0 1px 4px rgba(0,0,0,.6);}'
             // Scroll buttons use the web client's own classes; only show them where the client shows its own.
             + '.' + SECTION_CLASS + ' .gsp-scrollbuttons{display:none;}'
             + '.layout-desktop .' + SECTION_CLASS + ' .gsp-scrollbuttons{display:flex;}'
@@ -285,21 +272,27 @@
                 bg = 'background-image:url(\'' + img.replace(/'/g, '%27') + '\'),linear-gradient(135deg,hsl(' + hue + ',55%,38%),hsl('
                     + ((hue + 50) % 360) + ',60%,18%));';
             }
-            var label = '';
-            if (settings.ShowGenreName || !img) {
-                label = '<div class="gsp-shade"></div><div class="gsp-name">' + escapeHtml(name)
-                    + (x.info.count ? '<span class="gsp-count">' + x.info.count + ' ' + movieWord(x.info.count, settings.Language) + '</span>' : '')
-                    + '</div>';
-            }
-            // Only the size class "overflowBackdropCard" is borrowed from the web client. Generic classes like
-            // "card" are avoided on purpose: other plugins (e.g. Jellyfin Enhanced) decorate those as media items.
-            return '<a class="overflowBackdropCard gsp-card focusable" draggable="false" data-genre="' + escapeHtml(x.genre.Name)
-                + '" href="' + escapeHtml(href) + '" title="' + escapeHtml(name) + '">'
-                + '<div class="gsp-box"><div class="gsp-scalable">'
-                + '<div class="gsp-padder"></div>'
-                + '<div class="gsp-img" style="' + escapeHtml(bg) + '"></div>'
-                + label
-                + '</div></div></a>';
+            var count = x.info.count ? x.info.count + ' ' + movieWord(x.info.count, settings.Language) : '';
+            var link = ' href="' + escapeHtml(href) + '" draggable="false"';
+            // Same markup as the web client's own cards (cardBuilder), so themes and CSS tweaks apply unchanged.
+            // data-type="Genre" matches what the client uses for genre cards; plugins that decorate media cards
+            // (e.g. Jellyfin Enhanced rating/language tags) skip that type.
+            return '<div class="card overflowBackdropCard card-hoverable" data-isfolder="true" data-type="Genre"'
+                + ' data-id="' + escapeHtml(x.genre.Id) + '" data-serverid="' + escapeHtml(serverId) + '" data-genre="' + escapeHtml(x.genre.Name) + '">'
+                + '<div class="cardBox cardBox-bottompadded">'
+                + '<div class="cardScalable">'
+                + '<div class="cardPadder cardPadder-overflowBackdrop"></div>'
+                + '<a' + link + ' class="cardImageContainer coveredImage cardContent" aria-label="' + escapeHtml(name) + '" role="img" style="' + escapeHtml(bg) + '">'
+                + (img ? '' : '<div class="gsp-fallback-name">' + escapeHtml(name) + '</div>')
+                + '</a>'
+                + '<a' + link + ' class="cardOverlayContainer" tabindex="-1" aria-hidden="true"></a>'
+                + '</div>'
+                + (settings.ShowGenreName
+                    ? '<div class="cardText cardTextCentered cardText-first"><bdi><a' + link + ' class="textActionButton" title="' + escapeHtml(name) + '">'
+                        + escapeHtml(name) + '</a></bdi></div>'
+                        + '<div class="cardText cardTextCentered cardText-secondary"><bdi>' + escapeHtml(count || '\u00a0') + '</bdi></div>'
+                    : '')
+                + '</div></div>';
         }).join('');
 
         var section = document.createElement('div');
@@ -312,9 +305,17 @@
             + scrollButtonHtml('left')
             + scrollButtonHtml('right')
             + '</div>'
-            + '<div class="gsp-row padded-left padded-right focuscontainer-x">' + cards + '</div>';
+            + '<div class="padded-top-focusscale padded-bottom-focusscale emby-scroller gsp-row" data-centerfocus="true">'
+            + '<div class="itemsContainer scrollSlider focuscontainer-x" style="white-space:nowrap;">' + cards + '</div>'
+            + '</div>';
 
         var row = section.querySelector('.gsp-row');
+        // The home screen calls pause()/resume() on every ".itemsContainer" when it is hidden or shown.
+        var items = section.querySelector('.itemsContainer');
+        items.pause = function () {};
+        items.resume = function () {
+            return Promise.resolve();
+        };
         var buttons = section.querySelectorAll('.emby-scrollbuttons-button');
         var updateButtons = function () {
             var max = row.scrollWidth - row.clientWidth;
