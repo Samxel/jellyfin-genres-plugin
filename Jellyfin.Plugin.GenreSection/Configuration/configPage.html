@@ -54,6 +54,25 @@
                     </div>
 
                     <div class="selectContainer">
+                        <label class="selectLabel" for="gsLanguage">Label language</label>
+                        <select is="emby-select" id="gsLanguage" class="emby-select-withcolor emby-select">
+                            <option value="">Automatic (server language)</option>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="es">Español</option>
+                            <option value="it">Italiano</option>
+                            <option value="nl">Nederlands</option>
+                            <option value="pt">Português</option>
+                            <option value="pl">Polski</option>
+                            <option value="sv">Svenska</option>
+                            <option value="da">Dansk</option>
+                            <option value="nb">Norsk bokmål</option>
+                        </select>
+                        <div class="fieldDescription">Language of the movie count on the thumbnails (e.g. "12 movies").</div>
+                    </div>
+
+                    <div class="selectContainer">
                         <label class="selectLabel" for="gsPosition">Position</label>
                         <select is="emby-select" id="gsPosition" class="emby-select-withcolor emby-select">
                             <option value="Top">Top of the home screen</option>
@@ -343,6 +362,7 @@
                         page.querySelector('#gsEnabled').checked = config.Enabled;
                         page.querySelector('#gsInject').checked = config.InjectClientScript;
                         page.querySelector('#gsTitle').value = config.SectionTitle || '';
+                        page.querySelector('#gsLanguage').value = config.Language || '';
                         page.querySelector('#gsPosition').value = config.Position;
                         page.querySelector('#gsPositionIndex').value = config.PositionIndex;
                         libSelect.value = config.LibraryId || '';
@@ -370,6 +390,7 @@
                         config.Enabled = page.querySelector('#gsEnabled').checked;
                         config.InjectClientScript = page.querySelector('#gsInject').checked;
                         config.SectionTitle = page.querySelector('#gsTitle').value;
+                        config.Language = page.querySelector('#gsLanguage').value;
                         config.Position = page.querySelector('#gsPosition').value;
                         config.PositionIndex = parseInt(page.querySelector('#gsPositionIndex').value, 10) || 1;
                         config.LibraryId = page.querySelector('#gsLibrary').value;

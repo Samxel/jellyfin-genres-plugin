@@ -101,6 +101,11 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool ShowGenreName { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets the language of the section labels (e.g. "en", "de"). Empty = server language.
+    /// </summary>
+    public string Language { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the per-genre settings.
     /// </summary>
     [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "Required for XML serialization.")]

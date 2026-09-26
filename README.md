@@ -42,9 +42,9 @@ If you would rather load the script with a JavaScript injector plugin, turn off
 1. Raise `Version` in `Directory.Build.props` and `build.yaml`.
 2. `dotnet publish Jellyfin.Plugin.GenreSection/Jellyfin.Plugin.GenreSection.csproj -c Release -o out`,
    then zip `out/Jellyfin.Plugin.GenreSection.dll` as `release/genre-section_<version>.zip`.
-3. Add a version entry to `manifest.json` with `sourceUrl` pointing at the tag
-   (`…/v<version>/release/…zip`) and `checksum` = `md5sum` of the zip.
-4. Commit, create the tag `v<version>`, and push both.
+3. Commit and push the zip, then add a version entry to `manifest.json` whose `sourceUrl` points at
+   that commit (`…/<commit-sha>/release/…zip`) and whose `checksum` is the `md5sum` of the zip.
+4. Commit and push the manifest.
 
 ## Build & install manually
 

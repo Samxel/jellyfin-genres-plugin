@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Jellyfin.Plugin.GenreSection.Configuration;
 using MediaBrowser.Common.Api;
+using MediaBrowser.Controller.Configuration;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,17 @@ namespace Jellyfin.Plugin.GenreSection.Api;
 public partial class GenreSectionController : ControllerBase
 {
     private const long MaxImageSize = 10 * 1024 * 1024;
+
+    private readonly IServerConfigurationManager _serverConfigurationManager;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GenreSectionController"/> class.
+    /// </summary>
+    /// <param name="serverConfigurationManager">The server configuration manager.</param>
+    public GenreSectionController(IServerConfigurationManager serverConfigurationManager)
+    {
+        _serverConfigurationManager = serverConfigurationManager;
+    }
 
     /// <summary>
     /// Gets the client script that renders the genre section.
@@ -64,6 +76,9 @@ public partial class GenreSectionController : ControllerBase
             MinMovieCount = config.MinMovieCount,
             RandomDefaultThumbs = config.RandomDefaultThumbs,
             ShowGenreName = config.ShowGenreName,
+            Language = string.IsNullOrWhiteSpace(config.Language)
+                ? _serverConfigurationManager.Configuration.UICulture ?? "en-US"
+                : config.Language,
             Genres = config.Genres.Select(g => new ClientGenre
             {
                 Name = g.Name,

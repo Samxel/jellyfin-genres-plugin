@@ -48,12 +48,25 @@
         return Math.abs(hash) % 360;
     }
 
-    function movieWord(count) {
-        var german = /^de/i.test(document.documentElement.lang || navigator.language || '');
-        if (german) {
-            return count === 1 ? 'Film' : 'Filme';
-        }
-        return count === 1 ? 'movie' : 'movies';
+    var MOVIE_WORDS = {
+        en: ['movie', 'movies'],
+        de: ['Film', 'Filme'],
+        fr: ['film', 'films'],
+        es: ['película', 'películas'],
+        it: ['film', 'film'],
+        nl: ['film', 'films'],
+        pt: ['filme', 'filmes'],
+        pl: ['film', 'filmów'],
+        sv: ['film', 'filmer'],
+        da: ['film', 'film'],
+        nb: ['film', 'filmer']
+    };
+
+    // Uses the language from the plugin settings (server UI language unless set explicitly).
+    function movieWord(count, language) {
+        var lang = String(language || 'en').toLowerCase().split(/[-_]/)[0];
+        var words = MOVIE_WORDS[lang] || MOVIE_WORDS.en;
+        return count === 1 ? words[0] : words[1];
     }
 
     function resolveUrl(client, url) {
@@ -271,7 +284,7 @@
             var label = '';
             if (settings.ShowGenreName || !img) {
                 label = '<div class="gsp-shade"></div><div class="gsp-name">' + escapeHtml(name)
-                    + (x.info.count ? '<span class="gsp-count">' + x.info.count + ' ' + movieWord(x.info.count) + '</span>' : '')
+                    + (x.info.count ? '<span class="gsp-count">' + x.info.count + ' ' + movieWord(x.info.count, settings.Language) + '</span>' : '')
                     + '</div>';
             }
             return '<a class="gsp-card focusable" data-genre="' + escapeHtml(x.genre.Name) + '" href="' + escapeHtml(href)

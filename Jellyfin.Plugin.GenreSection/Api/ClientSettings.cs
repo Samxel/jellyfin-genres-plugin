@@ -58,6 +58,11 @@ public class ClientSettings
     public bool ShowGenreName { get; set; }
 
     /// <summary>
+    /// Gets or sets the language of the section labels (explicit setting or the server UI culture).
+    /// </summary>
+    public string Language { get; set; } = string.Empty;
+
+    /// <summary>
     /// Gets or sets the per-genre settings.
     /// </summary>
     [SuppressMessage("Performance", "CA1819:Properties should not return arrays", Justification = "DTO.")]
