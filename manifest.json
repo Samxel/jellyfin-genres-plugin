@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/master/docs/home.png",
     "versions": [
       {
+        "version": "1.0.3.0",
+        "changelog": "Option to show the genre name on the thumbnail (large and centered, or as a caption bar).",
+        "targetAbi": "12.1.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/59f06d32db37faf5409c616802c3f2cf8384ece7/release/genre-section_1.0.3.0.zip",
+        "checksum": "d32907ff910c8c9f7d45b017407d285c",
+        "timestamp": "2026-09-26T15:00:00Z"
+      },
+      {
         "version": "1.0.2.0",
         "changelog": "Genre cards use the same markup as the other home rows, so themes such as Abyss style them identically.",
         "targetAbi": "12.1.0.0",
