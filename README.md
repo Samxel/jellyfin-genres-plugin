@@ -20,6 +20,8 @@ Every genre is a thumbnail; clicking it opens a list of all movies in that genre
 - **Default thumbnails**: the backdrop of the highest-rated movie in the genre (optionally a random one
   of the top-rated movies). If a genre has no backdrop, a colored gradient is shown instead.
 - **Custom thumbnails** per genre: upload an image or enter an image URL
+- Genre name on the thumbnail: large and centered (like the library tiles), as the client's caption bar, or none;
+  name and movie count below the card can be turned on or off separately
 - Show all genres (alphabetical, with a minimum movie count) or only the checked genres in a custom order
 - Optional custom label per genre, and a limit on the number of genres shown
 - Click → `#/list?genreId=…&parentId=<movie library>`, which lists only the movies of that genre

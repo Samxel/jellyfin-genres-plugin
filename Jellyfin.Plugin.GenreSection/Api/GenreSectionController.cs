@@ -76,6 +76,7 @@ public partial class GenreSectionController : ControllerBase
             MinMovieCount = config.MinMovieCount,
             RandomDefaultThumbs = config.RandomDefaultThumbs,
             ShowGenreName = config.ShowGenreName,
+            NameOnImage = config.NameOnImage,
             Language = string.IsNullOrWhiteSpace(config.Language)
                 ? _serverConfigurationManager.Configuration.UICulture ?? "en-US"
                 : config.Language,

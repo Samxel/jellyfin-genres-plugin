@@ -114,6 +114,14 @@
                         <input id="gsMin" type="number" min="1" is="emby-input" />
                     </div>
 
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="gsNameOnImage">Genre name on the thumbnail</label>
+                        <select is="emby-select" id="gsNameOnImage" class="emby-select-withcolor emby-select">
+                            <option value="Center">Large, centered (like the library tiles)</option>
+                            <option value="Bottom">Small caption at the bottom</option>
+                            <option value="None">None</option>
+                        </select>
+                    </div>
                     <div class="checkboxContainer">
                         <label class="emby-checkbox-label">
                             <input id="gsShowName" type="checkbox" is="emby-checkbox" />
@@ -370,6 +378,7 @@
                         page.querySelector('#gsMax').value = config.MaxGenres;
                         page.querySelector('#gsMin').value = config.MinMovieCount;
                         page.querySelector('#gsShowName').checked = config.ShowGenreName;
+                        page.querySelector('#gsNameOnImage').value = config.NameOnImage || 'Center';
                         page.querySelector('#gsRandom').checked = config.RandomDefaultThumbs;
                         togglePositionIndex();
 
@@ -398,6 +407,7 @@
                         config.MaxGenres = parseInt(page.querySelector('#gsMax').value, 10) || 0;
                         config.MinMovieCount = parseInt(page.querySelector('#gsMin').value, 10) || 1;
                         config.ShowGenreName = page.querySelector('#gsShowName').checked;
+                        config.NameOnImage = page.querySelector('#gsNameOnImage').value;
                         config.RandomDefaultThumbs = page.querySelector('#gsRandom').checked;
                         config.Genres = rows.map(function (r) {
                             return { Name: r.Name, Enabled: r.Enabled, DisplayName: r.DisplayName, ImageUrl: r.ImageFile ? '' : r.ImageUrl, ImageFile: r.ImageFile };

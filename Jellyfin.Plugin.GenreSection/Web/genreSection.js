@@ -91,8 +91,12 @@
             + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging{cursor:grabbing;user-select:none;}'
             + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging .card{pointer-events:none;}'
             + '.' + SECTION_CLASS + ' .card a{-webkit-user-drag:none;}'
-            + '.' + SECTION_CLASS + ' .gsp-fallback-name{color:#fff;font-size:1.4em;font-weight:600;text-align:center;padding:0 .5em;'
-            + 'white-space:normal;text-shadow:0 1px 4px rgba(0,0,0,.6);}'
+            // Large centered name, like the text on the library tiles. Sized relative to the card width.
+            + '.' + SECTION_CLASS + ' .cardScalable{container-type:inline-size;}'
+            + '.' + SECTION_CLASS + ' .gsp-image-name{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;'
+            + 'padding:0 6%;box-sizing:border-box;background:rgba(0,0,0,.28);color:#fff;font-weight:700;text-align:center;'
+            + 'line-height:1.1;white-space:normal;overflow-wrap:anywhere;font-size:2em;font-size:12cqi;'
+            + 'text-shadow:0 2px 8px rgba(0,0,0,.55);}'
             // Scroll buttons use the web client's own classes; only show them where the client shows its own.
             + '.' + SECTION_CLASS + ' .gsp-scrollbuttons{display:none;}'
             + '.layout-desktop .' + SECTION_CLASS + ' .gsp-scrollbuttons{display:flex;}'
@@ -283,7 +287,7 @@
                 + '<div class="cardScalable">'
                 + '<div class="cardPadder cardPadder-overflowBackdrop"></div>'
                 + '<a' + link + ' class="cardImageContainer coveredImage cardContent" aria-label="' + escapeHtml(name) + '" role="img" style="' + escapeHtml(bg) + '">'
-                + (img ? '' : '<div class="gsp-fallback-name">' + escapeHtml(name) + '</div>')
+                + imageName(settings, name, !img)
                 + '</a>'
                 + '<a' + link + ' class="cardOverlayContainer" tabindex="-1" aria-hidden="true"></a>'
                 + '</div>'
@@ -336,6 +340,19 @@
         requestAnimationFrame(updateButtons);
         enableDragScroll(row);
         return section;
+    }
+
+    // Name drawn on the thumbnail. Without an image the name is always shown, otherwise the card is unlabeled.
+    function imageName(settings, name, noImage) {
+        var mode = settings.NameOnImage || 'Center';
+        if (mode === 'Bottom' && !noImage) {
+            // The web client's own caption bar (cardBuilder "overlayText").
+            return '<div class="innerCardFooter fullInnerCardFooter"><div class="cardText cardText-first">' + escapeHtml(name) + '</div></div>';
+        }
+        if (mode === 'Center' || noImage) {
+            return '<div class="gsp-image-name">' + escapeHtml(name) + '</div>';
+        }
+        return '';
     }
 
     function scrollButtonHtml(direction) {

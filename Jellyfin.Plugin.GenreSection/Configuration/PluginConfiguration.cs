@@ -96,9 +96,15 @@ public class PluginConfiguration : BasePluginConfiguration
     public bool RandomDefaultThumbs { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the genre name is drawn on top of the thumbnail.
+    /// Gets or sets a value indicating whether the genre name and movie count are shown below the thumbnail.
     /// </summary>
     public bool ShowGenreName { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets how the genre name is drawn on the thumbnail: "Center" (large, like the library tiles),
+    /// "Bottom" (the web client's small caption bar) or "None".
+    /// </summary>
+    public string NameOnImage { get; set; } = "Center";
 
     /// <summary>
     /// Gets or sets the language of the section labels (e.g. "en", "de"). Empty = server language.

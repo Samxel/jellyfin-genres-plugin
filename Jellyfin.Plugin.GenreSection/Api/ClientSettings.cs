@@ -53,9 +53,14 @@ public class ClientSettings
     public bool RandomDefaultThumbs { get; set; }
 
     /// <summary>
-    /// Gets or sets a value indicating whether the genre name is drawn on the thumbnail.
+    /// Gets or sets a value indicating whether the genre name and movie count are shown below the thumbnail.
     /// </summary>
     public bool ShowGenreName { get; set; }
+
+    /// <summary>
+    /// Gets or sets how the genre name is drawn on the thumbnail (Center, Bottom, None).
+    /// </summary>
+    public string NameOnImage { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the language of the section labels (explicit setting or the server UI culture).
