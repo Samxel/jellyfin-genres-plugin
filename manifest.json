@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/master/docs/home.png",
     "versions": [
       {
+        "version": "1.0.2.0",
+        "changelog": "Genre cards use the same markup as the other home rows, so themes such as Abyss style them identically.",
+        "targetAbi": "12.1.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/20f7c1b4aa7ae6f997b0c405959cd700ef0c70d9/release/genre-section_1.0.2.0.zip",
+        "checksum": "9615fb6344a39c52bb339c0479040a94",
+        "timestamp": "2026-09-26T14:00:00Z"
+      },
+      {
         "version": "1.0.1.0",
         "changelog": "Fix section position with Home Screen Sections, match the card size of the other rows, drag to scroll with the mouse, native scroll buttons.",
         "targetAbi": "12.1.0.0",
