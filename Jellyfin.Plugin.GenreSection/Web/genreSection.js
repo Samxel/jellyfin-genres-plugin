@@ -224,15 +224,22 @@
 
     // ---------------------------------------------------------------- render
 
-    function pickImage(client, settings, x) {
+    function pickImage(client, settings, x, used) {
         if (x.entry && x.entry.ImageUrl) {
             return resolveUrl(client, x.entry.ImageUrl);
         }
-        var backdrops = x.info.backdrops;
+        // Prefer a movie that is not already the thumbnail of another genre.
+        var backdrops = x.info.backdrops.filter(function (b) {
+            return !used[b.id];
+        });
+        if (!backdrops.length) {
+            backdrops = x.info.backdrops;
+        }
         if (backdrops.length) {
             var pick = settings.RandomDefaultThumbs
                 ? backdrops[Math.floor(Math.random() * backdrops.length)]
                 : backdrops[0];
+            used[pick.id] = true;
             return client.getUrl('Items/' + pick.id + '/Images/Backdrop/0', { maxWidth: 640, tag: pick.tag, quality: 90 });
         }
         var tags = x.genre.ImageTags || {};
@@ -247,13 +254,14 @@
 
     function buildSection(client, settings, data) {
         var serverId = client.serverId();
+        var used = {};
         var cards = data.list.map(function (x) {
             var name = (x.entry && x.entry.DisplayName) || x.genre.Name;
             var href = '#/list?genreId=' + encodeURIComponent(x.genre.Id) + '&serverId=' + encodeURIComponent(serverId);
             if (data.parentId) {
                 href += '&parentId=' + encodeURIComponent(data.parentId);
             }
-            var img = pickImage(client, settings, x);
+            var img = pickImage(client, settings, x, used);
             var hue = hashHue(x.genre.Name || '');
             var bg = 'background-image:linear-gradient(135deg,hsl(' + hue + ',55%,38%),hsl(' + ((hue + 50) % 360) + ',60%,18%));';
             if (img) {
