@@ -1,16 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using Jellyfin.Plugin.Template.Configuration;
+using Jellyfin.Plugin.GenreSection.Configuration;
 using MediaBrowser.Common.Configuration;
 using MediaBrowser.Common.Plugins;
 using MediaBrowser.Model.Plugins;
 using MediaBrowser.Model.Serialization;
 
-namespace Jellyfin.Plugin.Template;
+namespace Jellyfin.Plugin.GenreSection;
 
 /// <summary>
-/// The main plugin.
+/// The Genre Section plugin.
 /// </summary>
 public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
 {
@@ -26,10 +26,13 @@ public class Plugin : BasePlugin<PluginConfiguration>, IHasWebPages
     }
 
     /// <inheritdoc />
-    public override string Name => "Template";
+    public override string Name => "Genre Section";
 
     /// <inheritdoc />
-    public override Guid Id => Guid.Parse("eb5d7894-8eef-4b36-aa6f-5d124e828ce1");
+    public override Guid Id => Guid.Parse("e1f6b5dd-9ec4-4d62-8b58-cea2751f91d1");
+
+    /// <inheritdoc />
+    public override string Description => "Adds a clickable genre thumbnail row to the home screen.";
 
     /// <summary>
     /// Gets the current plugin instance.
