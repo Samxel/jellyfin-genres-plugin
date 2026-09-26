@@ -15,7 +15,8 @@ Every genre is a thumbnail; clicking it opens a list of all movies in that genre
 
 - Genre section on the home screen (top, bottom, or after the *n*-th visible home section), with a custom title.
   Works with the Home Screen Sections plugin.
-- Same card size as the other home rows; the row can be scrolled by clicking and dragging with the mouse
+- Uses the same card markup as the other home rows, so themes (e.g. Abyss) style it the same way; the row can be
+  scrolled by clicking and dragging with the mouse
 - **Default thumbnails**: the backdrop of the highest-rated movie in the genre (optionally a random one
   of the top-rated movies). If a genre has no backdrop, a colored gradient is shown instead.
 - **Custom thumbnails** per genre: upload an image or enter an image URL
