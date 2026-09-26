@@ -8,11 +8,10 @@
     window.__genreSectionPlugin = true;
 
     var SECTION_CLASS = 'genreSectionPlugin';
-    var SETTINGS_TTL = 60 * 1000;
     var DATA_TTL = 15 * 60 * 1000;
     var CANDIDATES_PER_GENRE = 12;
 
-    var settingsCache = null; // { key, time, value }
+    var settingsCache = null; // { key, value } - dropped whenever the user navigates, so changes apply on the next visit
     var dataCache = null; // { key, time, value }
     var pending = null;
     var scheduled = false;
@@ -84,28 +83,33 @@
             return;
         }
         var css = ''
-            + '.' + SECTION_CLASS + ' .gsp-wrap{position:relative;}'
-            + '.' + SECTION_CLASS + ' .gsp-row{display:flex;gap:1em;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;scroll-padding-inline:3.3%;'
-            + 'padding-top:.6em;padding-bottom:.9em;scrollbar-width:none;-webkit-overflow-scrolling:touch;}'
+            + '.' + SECTION_CLASS + ' .gsp-row{display:flex;overflow-x:auto;overflow-y:hidden;'
+            + 'scrollbar-width:none;-webkit-overflow-scrolling:touch;}'
             + '.' + SECTION_CLASS + ' .gsp-row::-webkit-scrollbar{display:none;}'
-            + '.' + SECTION_CLASS + ' .gsp-card{position:relative;flex:0 0 auto;width:clamp(12em,21vw,19em);aspect-ratio:16/9;'
-            + 'border-radius:.5em;overflow:hidden;scroll-snap-align:start;text-decoration:none;color:#fff;'
-            + 'box-shadow:0 .2em .6em rgba(0,0,0,.35);transition:transform .18s ease,box-shadow .18s ease;outline:none;}'
-            + '.' + SECTION_CLASS + ' .gsp-card:hover,.' + SECTION_CLASS + ' .gsp-card:focus{transform:scale(1.04);'
-            + 'box-shadow:0 .4em 1.2em rgba(0,0,0,.5);}'
-            + '.' + SECTION_CLASS + ' .gsp-card:focus-visible{box-shadow:0 0 0 .2em #00a4dc,0 .4em 1.2em rgba(0,0,0,.5);}'
+            + '.layout-desktop .' + SECTION_CLASS + ' .gsp-row{cursor:grab;}'
+            + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging{cursor:grabbing;user-select:none;}'
+            + '.' + SECTION_CLASS + ' .gsp-row.gsp-dragging .gsp-card{pointer-events:none;}'
+            // Cards use the web client's "overflowBackdropCard" size, so they match the other home rows;
+            // the margins mirror what the client applies to cards inside its own scrollers.
+            + '.' + SECTION_CLASS + ' .gsp-card{display:block;flex:0 0 auto;text-decoration:none;outline:none;-webkit-user-drag:none;}'
+            + '.' + SECTION_CLASS + ' .gsp-box{margin:.6em 1.2em .6em 0;}'
+            + '[dir="rtl"] .' + SECTION_CLASS + ' .gsp-box{margin:.6em 0 .6em 1.2em;}'
+            + '.' + SECTION_CLASS + ' .gsp-scalable{position:relative;border-radius:.2em;overflow:hidden;'
+            + 'transition:transform .18s ease,box-shadow .18s ease;}'
+            + '.' + SECTION_CLASS + ' .gsp-padder{padding-bottom:56.25%;}'
             + '.' + SECTION_CLASS + ' .gsp-img{position:absolute;inset:0;background-size:cover;background-position:center;}'
+            + '.' + SECTION_CLASS + ' .gsp-card:hover .gsp-scalable,.' + SECTION_CLASS + ' .gsp-card:focus .gsp-scalable{transform:scale(1.03);'
+            + 'box-shadow:0 .4em 1.2em rgba(0,0,0,.5);}'
+            + '.' + SECTION_CLASS + ' .gsp-card:focus-visible .gsp-scalable{box-shadow:0 0 0 .2em #00a4dc,0 .4em 1.2em rgba(0,0,0,.5);}'
             + '.' + SECTION_CLASS + ' .gsp-shade{position:absolute;inset:0;'
             + 'background:linear-gradient(180deg,rgba(0,0,0,0) 35%,rgba(0,0,0,.75) 100%);}'
-            + '.' + SECTION_CLASS + ' .gsp-name{position:absolute;left:.7em;right:.7em;bottom:.55em;font-size:1.25em;font-weight:600;'
+            + '.' + SECTION_CLASS + ' .gsp-name{position:absolute;left:.7em;right:.7em;bottom:.55em;font-size:1.25em;font-weight:600;color:#fff;'
             + 'text-shadow:0 1px 4px rgba(0,0,0,.8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}'
             + '.' + SECTION_CLASS + ' .gsp-count{display:block;font-size:.62em;font-weight:400;opacity:.85;}'
-            + '.' + SECTION_CLASS + ' .gsp-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:2.2em;height:2.2em;'
-            + 'border:0;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;font-size:1.3em;cursor:pointer;opacity:0;'
-            + 'transition:opacity .2s;display:flex;align-items:center;justify-content:center;}'
-            + '.' + SECTION_CLASS + ' .gsp-wrap:hover .gsp-nav{opacity:1;}'
-            + '.' + SECTION_CLASS + ' .gsp-prev{left:.3em;}.' + SECTION_CLASS + ' .gsp-next{right:.3em;}'
-            + '.layout-tv .' + SECTION_CLASS + ' .gsp-nav,.layout-mobile .' + SECTION_CLASS + ' .gsp-nav{display:none;}';
+            // Scroll buttons use the web client's own classes; only show them where the client shows its own.
+            + '.' + SECTION_CLASS + ' .gsp-scrollbuttons{display:none;}'
+            + '.layout-desktop .' + SECTION_CLASS + ' .gsp-scrollbuttons{display:flex;}'
+            + '@media (pointer:coarse){.' + SECTION_CLASS + ' .gsp-scrollbuttons{display:none !important;}}';
         var style = document.createElement('style');
         style.id = 'genreSectionPluginStyles';
         style.textContent = css;
@@ -116,11 +120,11 @@
 
     function getSettings(client) {
         var key = cacheKey(client);
-        if (settingsCache && settingsCache.key === key && Date.now() - settingsCache.time < SETTINGS_TTL) {
+        if (settingsCache && settingsCache.key === key) {
             return Promise.resolve(settingsCache.value);
         }
         return client.getJSON(client.getUrl('GenreSection/Settings')).then(function (value) {
-            settingsCache = { key: key, time: Date.now(), value: value };
+            settingsCache = { key: key, value: value };
             return value;
         });
     }
@@ -287,45 +291,227 @@
                     + (x.info.count ? '<span class="gsp-count">' + x.info.count + ' ' + movieWord(x.info.count, settings.Language) + '</span>' : '')
                     + '</div>';
             }
-            return '<a class="gsp-card focusable" data-genre="' + escapeHtml(x.genre.Name) + '" href="' + escapeHtml(href)
-                + '" title="' + escapeHtml(name) + '"><div class="gsp-img" style="' + escapeHtml(bg) + '"></div>' + label + '</a>';
+            // Only the size class "overflowBackdropCard" is borrowed from the web client. Generic classes like
+            // "card" are avoided on purpose: other plugins (e.g. Jellyfin Enhanced) decorate those as media items.
+            return '<a class="overflowBackdropCard gsp-card focusable" draggable="false" data-genre="' + escapeHtml(x.genre.Name)
+                + '" href="' + escapeHtml(href) + '" title="' + escapeHtml(name) + '">'
+                + '<div class="gsp-box"><div class="gsp-scalable">'
+                + '<div class="gsp-padder"></div>'
+                + '<div class="gsp-img" style="' + escapeHtml(bg) + '"></div>'
+                + label
+                + '</div></div></a>';
         }).join('');
 
         var section = document.createElement('div');
-        section.className = 'verticalSection ' + SECTION_CLASS;
+        section.className = 'verticalSection emby-scroller-container ' + SECTION_CLASS;
         section.innerHTML = ''
             + '<div class="sectionTitleContainer sectionTitleContainer-cards padded-left">'
             + '<h2 class="sectionTitle sectionTitle-cards">' + escapeHtml(settings.SectionTitle || 'Genres') + '</h2>'
             + '</div>'
-            + '<div class="gsp-wrap">'
-            + '<button type="button" class="gsp-nav gsp-prev" aria-label="Previous">&#8249;</button>'
-            + '<div class="gsp-row padded-left padded-right focuscontainer-x">' + cards + '</div>'
-            + '<button type="button" class="gsp-nav gsp-next" aria-label="Next">&#8250;</button>'
-            + '</div>';
+            + '<div class="emby-scrollbuttons padded-right gsp-scrollbuttons">'
+            + scrollButtonHtml('left')
+            + scrollButtonHtml('right')
+            + '</div>'
+            + '<div class="gsp-row padded-left padded-right focuscontainer-x">' + cards + '</div>';
 
         var row = section.querySelector('.gsp-row');
-        section.querySelector('.gsp-prev').addEventListener('click', function () {
-            row.scrollBy({ left: -row.clientWidth * 0.8, behavior: 'smooth' });
+        var buttons = section.querySelectorAll('.emby-scrollbuttons-button');
+        var updateButtons = function () {
+            var max = row.scrollWidth - row.clientWidth;
+            var scrollable = max > 20;
+            buttons[0].classList.toggle('hide', !scrollable);
+            buttons[1].classList.toggle('hide', !scrollable);
+            buttons[0].disabled = row.scrollLeft <= 0;
+            buttons[1].disabled = row.scrollLeft >= max - 1;
+        };
+        buttons[0].addEventListener('click', function () {
+            row.scrollBy({ left: -row.clientWidth * 0.9, behavior: 'smooth' });
         });
-        section.querySelector('.gsp-next').addEventListener('click', function () {
-            row.scrollBy({ left: row.clientWidth * 0.8, behavior: 'smooth' });
+        buttons[1].addEventListener('click', function () {
+            row.scrollBy({ left: row.clientWidth * 0.9, behavior: 'smooth' });
         });
+        row.addEventListener('scroll', updateButtons, { passive: true });
+        window.addEventListener('resize', updateButtons);
+        requestAnimationFrame(updateButtons);
+        enableDragScroll(row);
         return section;
     }
 
-    function placeSection(container, section, settings) {
-        if (settings.Position === 'Bottom') {
-            container.appendChild(section);
-            return;
-        }
-        if (settings.Position === 'AfterSection' && settings.PositionIndex > 0) {
-            var anchor = container.querySelector('.section' + (settings.PositionIndex - 1));
-            if (anchor) {
-                anchor.insertAdjacentElement('afterend', section);
-                return;
+    function scrollButtonHtml(direction) {
+        return '<button type="button" is="paper-icon-button-light" data-ripple="false" data-direction="' + direction + '"'
+            + ' class="emby-scrollbuttons-button paper-icon-button-light" title="' + (direction === 'left' ? 'Previous' : 'Next') + '">'
+            + '<span class="material-icons ' + (direction === 'left' ? 'chevron_left' : 'chevron_right') + '" aria-hidden="true"></span>'
+            + '</button>';
+    }
+
+    // Click and drag with the mouse to scroll the row, with a little momentum on release.
+    function enableDragScroll(row) {
+        var pointerId = null;
+        var startX = 0;
+        var startLeft = 0;
+        var lastX = 0;
+        var lastTime = 0;
+        var velocity = 0;
+        var moved = false;
+        var suppressClick = false;
+        var momentumFrame = 0;
+
+        function stopMomentum() {
+            if (momentumFrame) {
+                cancelAnimationFrame(momentumFrame);
+                momentumFrame = 0;
             }
         }
-        container.insertBefore(section, container.firstChild);
+
+        function momentum() {
+            velocity *= 0.94;
+            if (Math.abs(velocity) < 0.05) {
+                momentumFrame = 0;
+                return;
+            }
+            row.scrollLeft -= velocity * 16;
+            momentumFrame = requestAnimationFrame(momentum);
+        }
+
+        row.addEventListener('pointerdown', function (e) {
+            if (e.pointerType !== 'mouse' || e.button !== 0) {
+                return;
+            }
+            stopMomentum();
+            pointerId = e.pointerId;
+            startX = lastX = e.clientX;
+            startLeft = row.scrollLeft;
+            lastTime = performance.now();
+            velocity = 0;
+            moved = false;
+        });
+
+        row.addEventListener('pointermove', function (e) {
+            if (e.pointerId !== pointerId) {
+                return;
+            }
+            var dx = e.clientX - startX;
+            if (!moved && Math.abs(dx) > 5) {
+                moved = true;
+                row.classList.add('gsp-dragging');
+                row.setPointerCapture(pointerId);
+            }
+            if (moved) {
+                row.scrollLeft = startLeft - dx;
+                var now = performance.now();
+                velocity = (e.clientX - lastX) / Math.max(now - lastTime, 1);
+                lastX = e.clientX;
+                lastTime = now;
+            }
+        });
+
+        function end(e) {
+            if (e.pointerId !== pointerId) {
+                return;
+            }
+            pointerId = null;
+            if (moved) {
+                suppressClick = true;
+                setTimeout(function () {
+                    suppressClick = false;
+                }, 0);
+                row.classList.remove('gsp-dragging');
+                if (performance.now() - lastTime < 80) {
+                    momentumFrame = requestAnimationFrame(momentum);
+                }
+            }
+        }
+
+        row.addEventListener('pointerup', end);
+        row.addEventListener('pointercancel', end);
+        // A drag must not open the genre under the cursor.
+        row.addEventListener('click', function (e) {
+            if (suppressClick) {
+                e.preventDefault();
+                e.stopPropagation();
+                suppressClick = false;
+            }
+        }, true);
+        row.addEventListener('dragstart', function (e) {
+            e.preventDefault();
+        });
+    }
+
+    // Returns the element the section should follow (null = first child), or undefined when not known yet.
+    function getAnchor(container, settings) {
+        if (settings.Position === 'Bottom') {
+            var last = container.lastElementChild;
+            while (last && last.classList.contains(SECTION_CLASS)) {
+                last = last.previousElementSibling;
+            }
+            return last;
+        }
+        if (settings.Position === 'AfterSection' && settings.PositionIndex > 0) {
+            // Count only the home sections the user can actually see; empty ones (e.g. "Continue Watching"
+            // without items) stay in the DOM but are hidden.
+            var visible = [];
+            for (var i = 0; i < container.children.length; i++) {
+                var child = container.children[i];
+                if (child.classList.contains(SECTION_CLASS) || !/(^|\s)section\d+(\s|$)/.test(child.className)
+                    || child.classList.contains('hide') || !child.offsetHeight) {
+                    continue;
+                }
+                visible.push({ el: child, order: parseInt(window.getComputedStyle(child).order, 10) || 0, index: i });
+            }
+            // Sort by what the user sees: CSS order first, then DOM position.
+            visible.sort(function (x, y) {
+                return x.order - y.order || x.index - y.index;
+            });
+            if (!visible.length) {
+                return undefined;
+            }
+            var anchor = visible[Math.min(settings.PositionIndex, visible.length) - 1].el;
+            return anchor;
+        }
+        return null;
+    }
+
+    // Moves the section to its configured place. Home sections load asynchronously (e.g. with the
+    // Home Screen Sections plugin), so this runs again whenever the home screen changes.
+    function ensurePlacement(container, section, settings) {
+        var anchor = getAnchor(container, settings);
+        if (anchor === undefined) {
+            if (!section.parentNode) {
+                container.insertBefore(section, container.firstChild);
+            }
+        } else if (anchor === null) {
+            if (container.firstElementChild !== section) {
+                container.insertBefore(section, container.firstChild);
+            }
+        } else if (anchor.nextElementSibling !== section) {
+            anchor.insertAdjacentElement('afterend', section);
+        }
+        syncOrder(container, section, anchor);
+    }
+
+    // Some setups (e.g. the Home Screen Sections plugin) sort the home rows with CSS "order" instead of
+    // DOM order. Give the section the same order value as the row it follows, so the DOM position decides.
+    function syncOrder(container, section, anchor) {
+        var order = '';
+        if (anchor) {
+            order = window.getComputedStyle(anchor).order;
+        } else {
+            var min = null;
+            for (var i = 0; i < container.children.length; i++) {
+                var child = container.children[i];
+                if (child !== section) {
+                    var value = parseInt(window.getComputedStyle(child).order, 10) || 0;
+                    min = min === null ? value : Math.min(min, value);
+                }
+            }
+            order = min === null || min === 0 ? '' : String(min);
+        }
+        if (order === '0') {
+            order = '';
+        }
+        if (section.style.order !== order) {
+            section.style.order = order;
+        }
     }
 
     function findHomeContainer() {
@@ -341,7 +527,7 @@
     function render() {
         scheduled = false;
         var container = findHomeContainer();
-        if (!container || container.querySelector('.' + SECTION_CLASS) || pending) {
+        if (!container || pending) {
             return;
         }
         var client = getApiClient();
@@ -349,18 +535,37 @@
             return;
         }
 
+        var existing = container.querySelector('.' + SECTION_CLASS);
+        var key = cacheKey(client);
+        if (existing && settingsCache && settingsCache.key === key && existing.getAttribute('data-settings') === JSON.stringify(settingsCache.value)) {
+            ensurePlacement(container, existing, settingsCache.value);
+            return;
+        }
+
         injectStyles();
         pending = getSettings(client).then(function (settings) {
+            var current = findHomeContainer();
+            var old = current && current.querySelector('.' + SECTION_CLASS);
+            var settingsJson = JSON.stringify(settings);
+            if (old && old.getAttribute('data-settings') === settingsJson) {
+                ensurePlacement(current, old, settings);
+                return;
+            }
+            if (old) {
+                old.remove();
+            }
             if (!settings || !settings.Enabled) {
                 return;
             }
             return loadData(client, settings).then(function (data) {
                 // The home screen may have been re-rendered while we were loading.
-                var current = findHomeContainer();
+                current = findHomeContainer();
                 if (!current || current.querySelector('.' + SECTION_CLASS) || !data.list.length) {
                     return;
                 }
-                placeSection(current, buildSection(client, settings, data), settings);
+                var section = buildSection(client, settings, data);
+                section.setAttribute('data-settings', settingsJson);
+                ensurePlacement(current, section, settings);
             });
         }).catch(function (err) {
             console.error('[GenreSection] failed to render', err);
@@ -377,7 +582,15 @@
         window.requestAnimationFrame(render);
     }
 
+    // Reload the settings on every navigation, so changed settings apply when the home screen is shown again.
+    function onNavigate() {
+        settingsCache = null;
+        schedule();
+    }
+
     new MutationObserver(schedule).observe(document.documentElement, { childList: true, subtree: true });
-    window.addEventListener('hashchange', schedule);
+    window.addEventListener('hashchange', onNavigate);
+    window.addEventListener('popstate', onNavigate);
+    document.addEventListener('viewshow', onNavigate, true);
     schedule();
 })();

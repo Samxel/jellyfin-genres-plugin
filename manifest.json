@@ -9,6 +9,14 @@
     "imageUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/master/docs/home.png",
     "versions": [
       {
+        "version": "1.0.1.0",
+        "changelog": "Fix section position with Home Screen Sections, match the card size of the other rows, drag to scroll with the mouse, native scroll buttons.",
+        "targetAbi": "12.1.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/5aa30b61567133965e9f26003d123cbdee8d7ec7/release/genre-section_1.0.1.0.zip",
+        "checksum": "aeb99619acdd4bc2992067bd3b7fbfec",
+        "timestamp": "2026-09-26T13:00:00Z"
+      },
+      {
         "version": "1.0.0.0",
         "changelog": "Initial release.",
         "targetAbi": "12.1.0.0",
