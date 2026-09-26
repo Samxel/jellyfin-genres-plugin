@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Genre Section</title>
+</head>
+<body>
+    <div id="GenreSectionConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-select,emby-checkbox">
+        <style>
+            #GenreSectionConfigPage .gs-genres { display: flex; flex-direction: column; gap: .6em; margin-top: 1em; }
+            #GenreSectionConfigPage .gs-genre { display: grid; grid-template-columns: auto 8em 1fr auto; gap: .8em; align-items: center;
+                padding: .6em; border-radius: .4em; background: rgba(128, 128, 128, .12); }
+            #GenreSectionConfigPage .gs-genre.gs-disabled { opacity: .55; }
+            #GenreSectionConfigPage .gs-thumb { width: 8em; aspect-ratio: 16 / 9; border-radius: .3em; background: #333 center / cover no-repeat;
+                display: flex; align-items: flex-end; padding: .3em; box-sizing: border-box; color: #fff; font-size: .8em;
+                text-shadow: 0 1px 3px #000; }
+            #GenreSectionConfigPage .gs-fields { display: flex; flex-direction: column; gap: .4em; min-width: 0; }
+            #GenreSectionConfigPage .gs-fields input[type=text] { width: 100%; box-sizing: border-box; padding: .4em; border-radius: .2em;
+                border: 1px solid rgba(128, 128, 128, .4); background: rgba(0, 0, 0, .2); color: inherit; font: inherit; }
+            #GenreSectionConfigPage .gs-title { font-weight: 600; }
+            #GenreSectionConfigPage .gs-actions { display: flex; flex-wrap: wrap; gap: .3em; justify-content: flex-end; }
+            #GenreSectionConfigPage .gs-actions button { margin: 0; padding: .3em .7em; }
+            #GenreSectionConfigPage .gs-toolbar { display: flex; gap: .5em; flex-wrap: wrap; margin-top: .5em; }
+            @media (max-width: 700px) {
+                #GenreSectionConfigPage .gs-genre { grid-template-columns: auto 1fr; }
+                #GenreSectionConfigPage .gs-actions { grid-column: 1 / -1; justify-content: flex-start; }
+            }
+        </style>
+        <div data-role="content">
+            <div class="content-primary">
+                <form id="GenreSectionConfigForm">
+                    <h2 class="sectionTitle">Genre Section</h2>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="gsEnabled" type="checkbox" is="emby-checkbox" />
+                            <span>Show genre section on the home screen</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="gsInject" type="checkbox" is="emby-checkbox" />
+                            <span>Inject client script into the web client automatically</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Disable this if you load <code>/GenreSection/ClientScript</code> yourself (e.g. with a JavaScript injector plugin).
+                            Changes take effect after a browser reload.
+                        </div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="gsTitle">Section title</label>
+                        <input id="gsTitle" type="text" is="emby-input" />
+                    </div>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="gsLanguage">Label language</label>
+                        <select is="emby-select" id="gsLanguage" class="emby-select-withcolor emby-select">
+                            <option value="">Automatic (server language)</option>
+                            <option value="en">English</option>
+                            <option value="de">Deutsch</option>
+                            <option value="fr">Français</option>
+                            <option value="es">Español</option>
+                            <option value="it">Italiano</option>
+                            <option value="nl">Nederlands</option>
+                            <option value="pt">Português</option>
+                            <option value="pl">Polski</option>
+                            <option value="sv">Svenska</option>
+                            <option value="da">Dansk</option>
+                            <option value="nb">Norsk bokmål</option>
+                        </select>
+                        <div class="fieldDescription">Language of the movie count on the thumbnails (e.g. "12 movies").</div>
+                    </div>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="gsPosition">Position</label>
+                        <select is="emby-select" id="gsPosition" class="emby-select-withcolor emby-select">
+                            <option value="Top">Top of the home screen</option>
+                            <option value="AfterSection">After home section number …</option>
+                            <option value="Bottom">Bottom of the home screen</option>
+                        </select>
+                    </div>
+                    <div class="inputContainer" id="gsPositionIndexContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="gsPositionIndex">Insert after home section #</label>
+                        <input id="gsPositionIndex" type="number" min="1" max="10" is="emby-input" />
+                        <div class="fieldDescription">Counts the sections configured under Settings → Home (1 = after the first one).</div>
+                    </div>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="gsLibrary">Movie library</label>
+                        <select is="emby-select" id="gsLibrary" class="emby-select-withcolor emby-select">
+                            <option value="">Automatic</option>
+                        </select>
+                        <div class="fieldDescription">
+                            Genres and the list opened on click are limited to this library.
+                            "Automatic" uses the movie library if there is exactly one.
+                        </div>
+                    </div>
+
+                    <div class="selectContainer">
+                        <label class="selectLabel" for="gsMode">Genres shown</label>
+                        <select is="emby-select" id="gsMode" class="emby-select-withcolor emby-select">
+                            <option value="All">All genres (alphabetical)</option>
+                            <option value="Selected">Only checked genres (in the order below)</option>
+                        </select>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="gsMax">Maximum number of genres (0 = unlimited)</label>
+                        <input id="gsMax" type="number" min="0" is="emby-input" />
+                    </div>
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="gsMin">Minimum movies per genre ("All genres" mode)</label>
+                        <input id="gsMin" type="number" min="1" is="emby-input" />
+                    </div>
+
+                    <div class="checkboxContainer">
+                        <label class="emby-checkbox-label">
+                            <input id="gsShowName" type="checkbox" is="emby-checkbox" />
+                            <span>Show genre name on thumbnails</span>
+                        </label>
+                    </div>
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label class="emby-checkbox-label">
+                            <input id="gsRandom" type="checkbox" is="emby-checkbox" />
+                            <span>Random default thumbnails</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">
+                            Default thumbnail = backdrop of a top rated movie of the genre. When enabled a random one of the
+                            top rated movies is used on every visit.
+                        </div>
+                    </div>
+
+                    <h3 class="sectionTitle" style="margin-top:1.5em;">Genres &amp; thumbnails</h3>
+                    <div class="fieldDescription">
+                        Pick a custom thumbnail per genre by uploading an image or entering an image URL.
+                        Genres without a custom image use the default thumbnail.
+                    </div>
+                    <div class="gs-toolbar">
+                        <button is="emby-button" type="button" class="raised emby-button" id="gsCheckAll"><span>Check all</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button" id="gsCheckNone"><span>Uncheck all</span></button>
+                        <button is="emby-button" type="button" class="raised emby-button" id="gsSortAlpha"><span>Sort A–Z</span></button>
+                    </div>
+                    <div class="gs-genres" id="gsGenres"></div>
+
+                    <div style="margin-top:2em;">
+                        <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                            <span>Save</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <script type="text/javascript">
+            (function () {
+                var pluginId = 'e1f6b5dd-9ec4-4d62-8b58-cea2751f91d1';
+                var page = document.querySelector('#GenreSectionConfigPage');
+                var list = page.querySelector('#gsGenres');
+                var rows = []; // { Name, Enabled, DisplayName, ImageUrl, ImageFile }
+                var pendingDeletes = []; // uploaded files that are deleted once the configuration is saved
+
+                function esc(v) {
+                    return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) {
+                        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+                    });
+                }
+
+                function imageUrl(row) {
+                    if (row.ImageFile) {
+                        return ApiClient.getUrl('GenreSection/Images/' + encodeURIComponent(row.ImageFile));
+                    }
+                    if (row.ImageUrl) {
+                        return /^(https?:|data:|\/)/i.test(row.ImageUrl) ? row.ImageUrl : ApiClient.getUrl(row.ImageUrl);
+                    }
+                    return '';
+                }
+
+                function hue(text) {
+                    var h = 0;
+                    for (var i = 0; i < text.length; i++) { h = ((h << 5) - h + text.charCodeAt(i)) | 0; }
+                    return Math.abs(h) % 360;
+                }
+
+                function renderRows() {
+                    list.innerHTML = rows.map(function (row, i) {
+                        var img = imageUrl(row);
+                        var h = hue(row.Name);
+                        var bg = img
+                            ? "background-image:url('" + img.replace(/'/g, '%27') + "')"
+                            : 'background-image:linear-gradient(135deg,hsl(' + h + ',55%,38%),hsl(' + ((h + 50) % 360) + ',60%,18%))';
+                        return '<div class="gs-genre' + (row.Enabled ? '' : ' gs-disabled') + '" data-index="' + i + '">'
+                            + '<input type="checkbox" class="gs-enabled" title="Show this genre"' + (row.Enabled ? ' checked' : '') + ' />'
+                            + '<div class="gs-thumb" style="' + esc(bg) + '">' + (img ? '' : 'default') + '</div>'
+                            + '<div class="gs-fields">'
+                            + '<div class="gs-title">' + esc(row.Name) + (row.Missing ? ' <small>(not in library)</small>' : '') + '</div>'
+                            + '<input type="text" class="gs-display" placeholder="Label (default: ' + esc(row.Name) + ')" value="' + esc(row.DisplayName) + '" />'
+                            + '<input type="text" class="gs-url" placeholder="Image URL (optional)" value="' + esc(row.ImageFile ? '' : row.ImageUrl) + '"'
+                            + (row.ImageFile ? ' disabled title="Remove the uploaded image to use a URL"' : '') + ' />'
+                            + '</div>'
+                            + '<div class="gs-actions">'
+                            + '<button is="emby-button" type="button" class="raised emby-button gs-up" title="Move up">▲</button>'
+                            + '<button is="emby-button" type="button" class="raised emby-button gs-down" title="Move down">▼</button>'
+                            + '<button is="emby-button" type="button" class="raised emby-button gs-upload">Upload</button>'
+                            + '<button is="emby-button" type="button" class="raised emby-button gs-reset"' + (img ? '' : ' disabled') + '>Default</button>'
+                            + '<input type="file" class="gs-file" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none" />'
+                            + '</div>'
+                            + '</div>';
+                    }).join('');
+                }
+
+                function syncInputs() {
+                    list.querySelectorAll('.gs-genre').forEach(function (el) {
+                        var row = rows[+el.getAttribute('data-index')];
+                        row.DisplayName = el.querySelector('.gs-display').value.trim();
+                        if (!row.ImageFile) {
+                            row.ImageUrl = el.querySelector('.gs-url').value.trim();
+                        }
+                    });
+                }
+
+                function deleteUploaded(fileName) {
+                    if (!fileName) { return Promise.resolve(); }
+                    return fetch(ApiClient.getUrl('GenreSection/Images/' + encodeURIComponent(fileName)), {
+                        method: 'DELETE',
+                        headers: { Authorization: 'MediaBrowser Token="' + ApiClient.accessToken() + '"' }
+                    }).catch(function () { /* ignore */ });
+                }
+
+                function upload(row, file) {
+                    Dashboard.showLoadingMsg();
+                    return fetch(ApiClient.getUrl('GenreSection/Images', { genre: row.Name }), {
+                        method: 'POST',
+                        headers: {
+                            Authorization: 'MediaBrowser Token="' + ApiClient.accessToken() + '"',
+                            'Content-Type': file.type
+                        },
+                        body: file
+                    }).then(function (res) {
+                        if (!res.ok) { throw new Error('Upload failed: HTTP ' + res.status); }
+                        return res.text();
+                    }).then(function (text) {
+                        var name = text.replace(/^"|"$/g, '');
+                        var old = row.ImageFile;
+                        row.ImageFile = name;
+                        row.ImageUrl = '';
+                        renderRows();
+                        if (old) { pendingDeletes.push(old); }
+                    }).catch(function (err) {
+                        Dashboard.alert({ message: String(err.message || err) });
+                    }).then(function () {
+                        Dashboard.hideLoadingMsg();
+                    });
+                }
+
+                list.addEventListener('click', function (e) {
+                    var el = e.target.closest('.gs-genre');
+                    if (!el) { return; }
+                    syncInputs();
+                    var i = +el.getAttribute('data-index');
+                    var row = rows[i];
+                    if (e.target.closest('.gs-up') && i > 0) {
+                        rows.splice(i - 1, 0, rows.splice(i, 1)[0]);
+                        renderRows();
+                    } else if (e.target.closest('.gs-down') && i < rows.length - 1) {
+                        rows.splice(i + 1, 0, rows.splice(i, 1)[0]);
+                        renderRows();
+                    } else if (e.target.closest('.gs-upload')) {
+                        el.querySelector('.gs-file').click();
+                    } else if (e.target.closest('.gs-reset')) {
+                        var old = row.ImageFile;
+                        row.ImageFile = '';
+                        row.ImageUrl = '';
+                        renderRows();
+                        if (old) { pendingDeletes.push(old); }
+                    }
+                });
+
+                list.addEventListener('change', function (e) {
+                    var el = e.target.closest('.gs-genre');
+                    if (!el) { return; }
+                    syncInputs();
+                    var row = rows[+el.getAttribute('data-index')];
+                    if (e.target.classList.contains('gs-enabled')) {
+                        row.Enabled = e.target.checked;
+                        el.classList.toggle('gs-disabled', !row.Enabled);
+                    } else if (e.target.classList.contains('gs-file') && e.target.files.length) {
+                        upload(row, e.target.files[0]);
+                    } else if (e.target.classList.contains('gs-url')) {
+                        renderRows();
+                    }
+                });
+
+                page.querySelector('#gsCheckAll').addEventListener('click', function () {
+                    syncInputs();
+                    rows.forEach(function (r) { r.Enabled = true; });
+                    renderRows();
+                });
+                page.querySelector('#gsCheckNone').addEventListener('click', function () {
+                    syncInputs();
+                    rows.forEach(function (r) { r.Enabled = false; });
+                    renderRows();
+                });
+                page.querySelector('#gsSortAlpha').addEventListener('click', function () {
+                    syncInputs();
+                    rows.sort(function (a, b) { return a.Name.localeCompare(b.Name); });
+                    renderRows();
+                });
+
+                function togglePositionIndex() {
+                    page.querySelector('#gsPositionIndexContainer').style.display =
+                        page.querySelector('#gsPosition').value === 'AfterSection' ? '' : 'none';
+                }
+                page.querySelector('#gsPosition').addEventListener('change', togglePositionIndex);
+
+                function loadGenres(libraryId) {
+                    var query = {
+                        userId: ApiClient.getCurrentUserId(),
+                        IncludeItemTypes: 'Movie',
+                        Recursive: true,
+                        SortBy: 'SortName',
+                        SortOrder: 'Ascending'
+                    };
+                    if (libraryId) { query.ParentId = libraryId; }
+                    return ApiClient.getJSON(ApiClient.getUrl('Genres', query)).then(function (r) { return r.Items || []; });
+                }
+
+                function mergeRows(config, genres) {
+                    var byName = {};
+                    genres.forEach(function (g) { byName[g.Name.toLowerCase()] = g; });
+                    var seen = {};
+                    var result = (config.Genres || []).map(function (e) {
+                        seen[e.Name.toLowerCase()] = true;
+                        return {
+                            Name: e.Name,
+                            Enabled: !!e.Enabled,
+                            DisplayName: e.DisplayName || '',
+                            ImageUrl: e.ImageUrl || '',
+                            ImageFile: e.ImageFile || '',
+                            Missing: !byName[e.Name.toLowerCase()]
+                        };
+                    });
+                    genres.forEach(function (g) {
+                        if (!seen[g.Name.toLowerCase()]) {
+                            result.push({ Name: g.Name, Enabled: true, DisplayName: '', ImageUrl: '', ImageFile: '', Missing: false });
+                        }
+                    });
+                    return result;
+                }
+
+                page.addEventListener('pageshow', function () {
+                    Dashboard.showLoadingMsg();
+                    pendingDeletes = [];
+                    var librariesPromise = ApiClient.getJSON(ApiClient.getUrl('Library/VirtualFolders')).catch(function () { return []; });
+                    Promise.all([ApiClient.getPluginConfiguration(pluginId), librariesPromise]).then(function (res) {
+                        var config = res[0];
+                        var libs = (res[1] || []).filter(function (f) { return (f.CollectionType || '').toLowerCase() === 'movies'; });
+                        var libSelect = page.querySelector('#gsLibrary');
+                        libSelect.innerHTML = '<option value="">Automatic</option>' + libs.map(function (l) {
+                            return '<option value="' + esc(l.ItemId) + '">' + esc(l.Name) + '</option>';
+                        }).join('');
+
+                        page.querySelector('#gsEnabled').checked = config.Enabled;
+                        page.querySelector('#gsInject').checked = config.InjectClientScript;
+                        page.querySelector('#gsTitle').value = config.SectionTitle || '';
+                        page.querySelector('#gsLanguage').value = config.Language || '';
+                        page.querySelector('#gsPosition').value = config.Position;
+                        page.querySelector('#gsPositionIndex').value = config.PositionIndex;
+                        libSelect.value = config.LibraryId || '';
+                        page.querySelector('#gsMode').value = config.SelectionMode;
+                        page.querySelector('#gsMax').value = config.MaxGenres;
+                        page.querySelector('#gsMin').value = config.MinMovieCount;
+                        page.querySelector('#gsShowName').checked = config.ShowGenreName;
+                        page.querySelector('#gsRandom').checked = config.RandomDefaultThumbs;
+                        togglePositionIndex();
+
+                        return loadGenres(config.LibraryId).catch(function () { return []; }).then(function (genres) {
+                            rows = mergeRows(config, genres);
+                            renderRows();
+                        });
+                    }).finally(function () {
+                        Dashboard.hideLoadingMsg();
+                    });
+                });
+
+                page.querySelector('#GenreSectionConfigForm').addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    syncInputs();
+                    Dashboard.showLoadingMsg();
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        config.Enabled = page.querySelector('#gsEnabled').checked;
+                        config.InjectClientScript = page.querySelector('#gsInject').checked;
+                        config.SectionTitle = page.querySelector('#gsTitle').value;
+                        config.Language = page.querySelector('#gsLanguage').value;
+                        config.Position = page.querySelector('#gsPosition').value;
+                        config.PositionIndex = parseInt(page.querySelector('#gsPositionIndex').value, 10) || 1;
+                        config.LibraryId = page.querySelector('#gsLibrary').value;
+                        config.SelectionMode = page.querySelector('#gsMode').value;
+                        config.MaxGenres = parseInt(page.querySelector('#gsMax').value, 10) || 0;
+                        config.MinMovieCount = parseInt(page.querySelector('#gsMin').value, 10) || 1;
+                        config.ShowGenreName = page.querySelector('#gsShowName').checked;
+                        config.RandomDefaultThumbs = page.querySelector('#gsRandom').checked;
+                        config.Genres = rows.map(function (r) {
+                            return { Name: r.Name, Enabled: r.Enabled, DisplayName: r.DisplayName, ImageUrl: r.ImageFile ? '' : r.ImageUrl, ImageFile: r.ImageFile };
+                        });
+                        return ApiClient.updatePluginConfiguration(pluginId, config);
+                    }).then(function (result) {
+                        var toDelete = pendingDeletes;
+                        pendingDeletes = [];
+                        toDelete.forEach(deleteUploaded);
+                        Dashboard.processPluginConfigurationUpdateResult(result);
+                    }).catch(function (err) {
+                        Dashboard.hideLoadingMsg();
+                        Dashboard.alert({ message: 'Saving failed: ' + err });
+                    });
+                    return false;
+                });
+            })();
+        </script>
+    </div>
+</body>
+</html>
