@@ -30,7 +30,23 @@ Uploaded images are stored in `<data>/plugins/Jellyfin.Plugin.GenreSection/image
 If you would rather load the script with a JavaScript injector plugin, turn off
 "Inject client script" and load `/GenreSection/ClientScript` yourself.
 
-## Build & install
+## Install via plugin repository
+
+1. Dashboard → Plugins → Repositories → **+**
+   - Name: `Genre Section`
+   - URL: `https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/master/manifest.json`
+2. Install **Genre Section** from the catalog and restart the server.
+
+## Release a new version
+
+1. Raise `Version` in `Directory.Build.props` and `build.yaml`.
+2. `dotnet publish Jellyfin.Plugin.GenreSection/Jellyfin.Plugin.GenreSection.csproj -c Release -o out`,
+   then zip `out/Jellyfin.Plugin.GenreSection.dll` as `release/genre-section_<version>.zip`.
+3. Add a version entry to `manifest.json` with `sourceUrl` pointing at the tag
+   (`…/v<version>/release/…zip`) and `checksum` = `md5sum` of the zip.
+4. Commit, create the tag `v<version>`, and push both.
+
+## Build & install manually
 
 ```shell
 dotnet publish Jellyfin.Plugin.GenreSection.slnx -c Release

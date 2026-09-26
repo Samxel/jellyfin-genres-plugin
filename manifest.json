@@ -1,0 +1,21 @@
+[
+  {
+    "guid": "e1f6b5dd-9ec4-4d62-8b58-cea2751f91d1",
+    "name": "Genre Section",
+    "description": "Shows a \"Genres\" section on the home screen. Every genre is a thumbnail (a custom image or an automatic default) that opens all movies of that genre when clicked.",
+    "overview": "Adds a clickable genre thumbnail row to the Jellyfin home screen.",
+    "owner": "samxel",
+    "category": "General",
+    "imageUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/master/docs/home.png",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Initial release.",
+        "targetAbi": "12.1.0.0",
+        "sourceUrl": "https://raw.githubusercontent.com/samxel/jellyfin-genres-plugin/v1.0.0.0/release/genre-section_1.0.0.0.zip",
+        "checksum": "e946d0bdf8010a5ee6d24edac2130bc4",
+        "timestamp": "2026-09-26T12:00:00Z"
+      }
+    ]
+  }
+]
